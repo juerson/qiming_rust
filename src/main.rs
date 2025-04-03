@@ -138,7 +138,7 @@ fn clear_output_directory(dir: &Path) {
     if dir.exists() {
         rayon::scope(|s| {
             fs::read_dir(dir)
-                .expect("读取 output 目录失败")
+                .expect(&format!("无法读取文件夹: {}", dir.display()))
                 .filter_map(Result::ok)
                 .for_each(|entry| {
                     let path = entry.path();
@@ -151,7 +151,7 @@ fn clear_output_directory(dir: &Path) {
                     });
                 });
         });
-        fs::remove_dir_all(dir).expect("删除 output 目录失败");
+        fs::remove_dir_all(dir).expect(&format!("无法删除文件夹: {}", dir.display()));
     }
 }
 
@@ -162,7 +162,7 @@ fn load_filtered_words(
 ) -> IndexSet<String> {
     if is_surname_path {
         fs::read_to_string(path)
-            .expect("无法读取文件")
+            .expect(&format!("无法读取文件: {}", path))
             .lines()
             .map(|line| zhconv(line, "zh-cn".parse().unwrap_or_default()))
             .filter(|word| !word.trim().is_empty())
@@ -170,7 +170,7 @@ fn load_filtered_words(
             .collect::<IndexSet<_>>()
     } else {
         fs::read_to_string(path)
-            .expect("无法读取文件")
+            .expect(&format!("无法读取文件: {}", path))
             .lines()
             .map(|line| zhconv(line, "zh-cn".parse().unwrap_or_default()))
             .flat_map(|converted| {
@@ -187,7 +187,7 @@ fn load_filtered_words(
 
 fn load_blocklist(path: &str) -> HashSet<String> {
     fs::read_to_string(path)
-        .expect("无法读取'黑名单.txt'文件")
+        .expect(&format!("无法读取文件: {}", path))
         .lines()
         .map(|line| zhconv(line, "zh-cn".parse().unwrap_or_default()))
         .flat_map(|line| {
